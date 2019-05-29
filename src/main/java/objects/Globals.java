@@ -11,8 +11,7 @@ import java.util.List;
 
 public class Globals {
     public static final String PREFIX = "wat";
-
-    public static final String TOKEN = "INSERT_TOKEN_HERE";
+    public static final String TOKEN = "PUT TOKEN HERE";
 
 
     public static void sendMessage(IChannel channel, String message) {
@@ -33,6 +32,7 @@ public class Globals {
                 builder.withAuthorName(data.title);
                 builder.withFooterText("Published by: " + data.author);
                 builder.withImage(data.url);
+                builder.withUrl(data.url);
                 RequestBuffer.request(() -> channel.sendMessage(builder.build()));
             }else{
                 Globals.sendMessage(channel,data.url);

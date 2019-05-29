@@ -96,20 +96,20 @@ public class PostfixNotation {
     }
 
     public static double processTrig(String operand, double value, boolean isRadian) {
-        if (!isRadian) value = Math.toRadians(value);
+        if (!isRadian) value = StrictMath.toRadians(value);
         switch (operand) {
             case "sin":
-                return Math.sin(value);
+                return StrictMath.sin(value);
             case "cos":
-                return Math.cos(value);
+                return StrictMath.cos(value);
             case "tan":
-                return Math.tan(value);
+                return StrictMath.tan(value);
             case "asin":
-                return Math.asin(value);
+                return StrictMath.asin(value);
             case "acos":
-                return Math.acos(value);
+                return StrictMath.acos(value);
             case "atan":
-                return Math.atan(value);
+                return StrictMath.atan(value);
             default:
                 return 0;
         }

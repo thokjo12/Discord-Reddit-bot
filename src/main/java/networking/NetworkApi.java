@@ -18,7 +18,7 @@ import java.util.function.BiConsumer;
 public class NetworkApi {
     private static RedditClient redditClient = RetrofitFactory.buildClient(RedditClient.class);
 
-    public static <F, T> CompletableFuture<T> fetch(Call<F> call, Mapper<F,T> mapper){
+    public static <F, T> CompletableFuture<T> _fetch(Call<F> call, Mapper<F,T> mapper){
         return fetch(call,(future,body) -> future.complete(mapper.apply(body)));
     }
 

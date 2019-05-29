@@ -40,8 +40,8 @@ public class RedditCommands {
             } else {
                 redditMap.put(requestedReddit, res);
             }
-            userState.put(username, new AbstractMap.SimpleEntry<>(requestedReddit, 0));
-
+            Map.Entry<String,Integer> prevEntry = userState.put(username, new AbstractMap.SimpleEntry<String,Integer>(requestedReddit, 0));
+            redditMap.remove(prevEntry.getKey());
             Child child = redditMap.get(requestedReddit).data.children.get(0);
             publishContent(child.data,channel);
         });

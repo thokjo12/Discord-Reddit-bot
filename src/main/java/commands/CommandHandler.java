@@ -2,6 +2,7 @@ package commands;
 
 import objects.Globals;
 import objects.PostfixNotation;
+import objects.TextData;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
@@ -9,9 +10,7 @@ import sx.blah.discord.util.RequestBuffer;
 
 import java.util.*;
 
-
 public class CommandHandler implements IListener<MessageReceivedEvent> {
-
     private static Map<String, Command> commandMap = new HashMap<String, Command>() {{
         put("about", (event, args) -> {
             EmbedBuilder builder = new EmbedBuilder();
@@ -36,27 +35,32 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         put("howto", (event, args) -> {
             args.remove(0);
             String query = String.join(" ", args);
-            Globals.sendMessage(event.getChannel(),"probably going to do some stack overflow magic here, also here is your query: " + query );
+            Globals.sendMessage(event.getChannel(),TextData.howto_text + query );
 
         });
 
         put("rtop", (event, args) -> {
+            if(args.size() == 1 || args.size() > 2){
+                Globals.sendMessage(event.getChannel(),TextData.rtop_text_error);
+            }
             args.remove(0);
             String requestedReddit = args.get(0);
             RedditCommands.redditTop(requestedReddit, event);
         });
 
-        put("rnew",((event, args) -> {
+        put("rnew",(event, args) -> {
+            if(args.size() == 1 || args.size() > 2){
+                Globals.sendMessage(event.getChannel(),TextData.rnew_text_error);
+            }
             args.remove(0);
             String requestedReddit = args.get(0);
             RedditCommands.redditNew(requestedReddit,event);
-        }));
+        });
 
-        put("next", ((event, args) -> {
+        put("next", (event, args) -> {
             String username = event.getAuthor().getName();
             RedditCommands.next(username, event);
-        }));
-
+        });
     }};
 
     @Override

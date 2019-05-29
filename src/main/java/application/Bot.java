@@ -7,7 +7,8 @@ import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
 
 
-public class Bot{
+public class
+Bot{
     public static void main(String[] args) {
         IDiscordClient client = ClientLib.createClient(Globals.TOKEN, true);
         EventDispatcher dispatcher = client.getDispatcher();
