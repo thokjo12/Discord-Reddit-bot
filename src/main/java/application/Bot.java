@@ -1,16 +1,20 @@
 package application;
 
 import commands.CommandHandler;
-import objects.ClientLib;
-import objects.Globals;
-import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.events.EventDispatcher;
+import discord4j.core.DiscordClient;
+import discord4j.core.DiscordClientBuilder;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 
 
 public class Bot{
     public static void main(String[] args) {
-        IDiscordClient client = ClientLib.createClient(Globals.TOKEN, true);
-        EventDispatcher dispatcher = client.getDispatcher();
-        dispatcher.registerListener(new CommandHandler());
+        if (args.length == 0){
+            System.out.println("you need to set a token as an argument!");
+        }
+        DiscordClient client = new DiscordClientBuilder(args[0]).build();
+        CommandHandler handler = new CommandHandler();
+        client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(handler::handle);
+        client.login().block();
+
     }
 }

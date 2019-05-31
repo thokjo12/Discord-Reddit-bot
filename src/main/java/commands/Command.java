@@ -1,6 +1,7 @@
 package commands;
 
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
 
 import java.util.List;
 
@@ -9,5 +10,5 @@ import java.util.List;
  */
 public interface Command {
 
-    void runCommand(MessageReceivedEvent event, List<String> args);
+    void runCommand(MessageCreateEvent event, List<String> args);
 }

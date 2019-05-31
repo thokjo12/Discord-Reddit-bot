@@ -1,41 +1,31 @@
 package objects;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import objects.reddit.subtypes.SubData;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.EmbedBuilder;
-import sx.blah.discord.util.RequestBuffer;
 
-import java.util.List;
+import java.awt.*;
 
 public class Globals {
     public static final String PREFIX = "wat";
-    public static final String TOKEN = "PUT TOKEN HERE";
 
 
-    public static void sendMessage(IChannel channel, String message) {
-        RequestBuffer.request(() -> {
-            try {
-                channel.sendMessage(message);
-            } catch (DiscordException err){
-                System.out.println("Error sending message : " + err.getErrorMessage());
-            }
-        });
+    public static void sendMessage(MessageCreateEvent event, String message) {
+        event.getMessage().getChannel().block().createMessage(message).block();
     }
 
-    public static void buildRedditEmbeddedContent(IChannel channel, SubData data){
+    public static void buildRedditEmbeddedContent(MessageCreateEvent event, SubData data) {
         boolean isImage = data.url.matches(".*\\.(gif|jpg|jpeg|tiff|png)");
-            if(isImage){
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.withColor(255, 0, 0);
-                builder.withAuthorName(data.title);
-                builder.withFooterText("Published by: " + data.author);
-                builder.withImage(data.url);
-                builder.withUrl(data.url);
-                RequestBuffer.request(() -> channel.sendMessage(builder.build()));
-            }else{
-                Globals.sendMessage(channel,data.url);
-            }
+
+        if (isImage) {
+            event.getMessage().getChannel().block().createEmbed(spec -> {
+                spec.setColor(new Color(255, 0, 0));
+                spec.setAuthor(data.title,null,null);
+                spec.setFooter("Published by: " + data.author,null);
+                spec.setImage(data.url);
+                spec.setUrl(data.url);
+            }).block();
+        } else {
+            Globals.sendMessage(event, data.url);
+        }
     }
 }

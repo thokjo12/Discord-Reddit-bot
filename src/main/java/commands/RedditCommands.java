@@ -1,12 +1,14 @@
 package commands;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.data.stored.ChannelBean;
+import discord4j.core.object.entity.Channel;
+
 import networking.NetworkApi;
 import objects.Globals;
 import objects.reddit.RedditResponse;
 import objects.reddit.subtypes.Child;
 import objects.reddit.subtypes.SubData;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IChannel;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -17,75 +19,72 @@ public class RedditCommands {
     static HashMap<String, RedditResponse> redditMap = new HashMap<>();
     static HashMap<String, Map.Entry<String, Integer>> userState = new HashMap<>();
 
-    public static void redditTop(String requestedReddit, MessageReceivedEvent event) {
-        String username = event.getAuthor().getName();
-        IChannel channel = event.getChannel();
+    public static void redditTop(String requestedReddit, MessageCreateEvent event) {
+
         if (!redditMap.containsKey(requestedReddit)) {
-            CompletableFuture<RedditResponse> response = NetworkApi.getTopPost(requestedReddit);
-            pushResult(response,
-                    channel,
-                    requestedReddit,
-                    username
+            pushResult(NetworkApi.getTopPost(requestedReddit),
+                    event,
+                    requestedReddit
             );
         } else {
-            Globals.sendMessage(channel, "You are already looking at it, type next");
+            Globals.sendMessage(event, "You are already looking at it, type next");
         }
     }
 
-    private static void pushResult(CompletableFuture<RedditResponse> response,IChannel channel,String requestedReddit,String username) {
+    private static void pushResult(CompletableFuture<RedditResponse> response, MessageCreateEvent event, String requestedReddit) {
         response.whenComplete((res, t) -> {
             if (t != null) {
-                Globals.sendMessage(channel, "Something went wrong");
+                Globals.sendMessage(event, "Something went wrong");
                 return;
             } else {
                 redditMap.put(requestedReddit, res);
             }
+            String username = event.getMessage().getAuthor().get().getUsername();
             Map.Entry<String,Integer> prevEntry = userState.put(username, new AbstractMap.SimpleEntry<String,Integer>(requestedReddit, 0));
             redditMap.remove(prevEntry.getKey());
             Child child = redditMap.get(requestedReddit).data.children.get(0);
-            publishContent(child.data,channel);
+            publishContent(child.data,event);
         });
     }
 
 
-    public static void next(String username, MessageReceivedEvent event) {
-        IChannel channel = event.getChannel();
+    public static void next( MessageCreateEvent event) {
+        String username = event.getMessage().getAuthor().get().getUsername();
         if (userState.containsKey(username)) {
             Map.Entry<String, Integer> entry = userState.get(username);
             RedditResponse reddit = redditMap.get(entry.getKey());
             if (entry.getValue() == reddit.data.children.size()) {
-                Globals.sendMessage(channel, "I'm out of posts! Too much of the good stuff is not good for you!");
+                Globals.sendMessage(event, "I'm out of posts! Too much of the good stuff is not good for you!");
                 return;
             }
             entry.setValue(entry.getValue() + 1);
             SubData data = reddit.data.children.get(entry.getValue()).data;
             userState.put(username, entry);
-            publishContent(data,channel);
+            publishContent(data,event);
 
         } else {
-            Globals.sendMessage(channel, "you need to specify which reddit you want to look at!");
+            Globals.sendMessage(event, "you need to specify which reddit you want to look at!");
         }
     }
 
-    public static void publishContent(SubData data, IChannel channel){
-        if (!channel.isNSFW() && data.over_18) {
-            Globals.sendMessage(channel, "itsa nsfw cant post that here.");
+    public static void publishContent(SubData data, MessageCreateEvent event){
+        ChannelBean channelMeta = new ChannelBean(event.getMessage().getChannelId().asLong(), Channel.Type.DM.getValue());
+
+        if (!channelMeta.isNsfw() && data.over_18) {
+            Globals.sendMessage(event, "itsa nsfw cant post that here.");
         } else {
-            Globals.buildRedditEmbeddedContent(channel, data);
+            Globals.buildRedditEmbeddedContent(event, data);
         }
     }
 
-    public static void redditNew(String requestedReddit, MessageReceivedEvent event) {
-        String username = event.getAuthor().getName();
-        IChannel channel = event.getChannel();
+    public static void redditNew(String requestedReddit, MessageCreateEvent event) {
         if(!redditMap.containsKey(requestedReddit)){
             pushResult(NetworkApi.getNewPost(requestedReddit),
-                    channel,
-                    requestedReddit,
-                    username
+                    event,
+                    requestedReddit
             );
         }else{
-            Globals.sendMessage(channel, "You are already looking at it, type next");
+            Globals.sendMessage(event, "You are already looking at it, type next");
         }
     }
 }
